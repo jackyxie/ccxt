@@ -1,5 +1,5 @@
 {
-    "name": "ccxt/ccxt",
+    "name": "jackyxie/ccxt",
     "type": "library",
     "description": "A JavaScript / Python / PHP cryptocurrency trading library with support for more than 90 bitcoin/altcoin exchanges",
     "keywords": [
@@ -207,17 +207,12 @@
         "YUNBI",
         "Zaif"
     ],
-    "homepage": "https://github.com/ccxt/ccxt",
+    "homepage": "https://github.com/jackyxie/ccxt",
     "license": "MIT",
     "authors": [{
-        "name": "Igor Kroitor",
-        "email": "igor.kroitor@gmail.com",
-        "homepage": "https://github.com/kroitor",
-        "role": "Developer"
-    }, {
-        "name": "Vitaly Gordon",
-        "email": "rocket.mind@gmail.com",
-        "homepage": "https://github.com/xpl",
+        "name": "Jacky Xie",
+        "email": "jackyxie007@gmail.com",
+        "homepage": "https://github.com/jackyxie",
         "role": "Developer"
     }],
     "autoload": {
