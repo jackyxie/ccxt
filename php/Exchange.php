@@ -877,7 +877,6 @@ class Exchange {
     }
 
     public function fetch ($url, $method = 'GET', $headers = null, $body = null) {
-        var_dump($url);
         if ($this->enableRateLimit)
             $this->throttle ();
 
