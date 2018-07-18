@@ -56,6 +56,7 @@ class Exchange {
         'anxpro',
         'anybits',
         'bibox',
+        'bigone',
         'binance',
         'bit2c',
         'bitbank',
@@ -830,7 +831,7 @@ class Exchange {
     }
 
     public function jwt ($request, $secret, $alg = 'HS256', $hash = 'sha256') {
-        $encodedHeader = $this->urlencodeBase64 (json_encode (array ('alg' => $alg, 'typ' => 'JWT')));
+        $encodedHeader = $this->urlencodeBase64 (json_encode (array ('typ' => 'JWT', 'alg' => $alg)));
         $encodedData = $this->urlencodeBase64 (json_encode ($request, JSON_UNESCAPED_SLASHES));
         $token = $encodedHeader . '.' . $encodedData;
         $signature = $this->urlencodeBase64 ($this->hmac ($token, $secret, $hash, 'binary'));
@@ -876,7 +877,7 @@ class Exchange {
     }
 
     public function fetch ($url, $method = 'GET', $headers = null, $body = null) {
-
+        var_dump($url);
         if ($this->enableRateLimit)
             $this->throttle ();
 
