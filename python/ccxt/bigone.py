@@ -309,7 +309,7 @@ class bigone (Exchange):
                 'used': float(balance['locked_balance']),
                 'total': float(balance['balance']),
             }
-            account['total'] = self.sum(account['total'], -account['used'])
+            account['free'] = self.sum(account['total'], -account['used'])
             result[currency] = account
         return self.parse_balance(result)
 

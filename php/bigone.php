@@ -319,7 +319,7 @@ class bigone extends Exchange {
                 'used' => floatval ($balance['locked_balance']),
                 'total' => floatval ($balance['balance']),
             );
-            $account['total'] = $this->sum ($account['total'], -$account['used']);
+            $account['free'] = $this->sum ($account['total'], -$account['used']);
             $result[$currency] = $account;
         }
         return $this->parse_balance($result);

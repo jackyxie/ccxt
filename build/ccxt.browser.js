@@ -4835,7 +4835,7 @@ module.exports = class bigone extends Exchange {
                 'used': parseFloat (balance['locked_balance']),
                 'total': parseFloat (balance['balance']),
             };
-            account['total'] = this.sum (account['total'], -account['used']);
+            account['free'] = this.sum (account['total'], -account['used']);
             result[currency] = account;
         }
         return this.parseBalance (result);
