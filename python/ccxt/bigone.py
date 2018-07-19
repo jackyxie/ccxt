@@ -314,7 +314,7 @@ class bigone (Exchange):
         return self.parse_balance(result)
 
     def parse_order(self, order, market=None):
-        order_data = self.safe_string(order, 'node')
+        order_data = self.safe_value(order, 'node')
         if order_data:
             order = order['node']
         marketId = self.safe_string(order, 'market_id')

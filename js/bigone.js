@@ -325,7 +325,7 @@ module.exports = class bigone extends Exchange {
     }
 
     parseOrder (order, market = undefined) {
-        let order_data = this.safeString (order, 'node');
+        let order_data = this.safeValue (order, 'node');
         if (order_data) {
             order = order['node'];
         }

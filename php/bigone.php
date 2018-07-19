@@ -326,7 +326,7 @@ class bigone extends Exchange {
     }
 
     public function parse_order ($order, $market = null) {
-        $order_data = $this->safe_string($order, 'node');
+        $order_data = $this->safe_value($order, 'node');
         if ($order_data) {
             $order = $order['node'];
         }
