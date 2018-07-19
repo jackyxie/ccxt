@@ -57,6 +57,50 @@ class bigone extends Exchange {
                     ),
                 ),
             ),
+            'exceptions' => array (
+                // see https://open.big.one/docs/api_error_codes.html
+                '10001' => '\\ccxt\\ExchangeError', // "syntax error"
+                '10002' => '\\ccxt\\ExchangeError', // "cannot query fields"
+                '10003' => '\\ccxt\\ExchangeError', // "service timeout"
+                '10004' => '\\ccxt\\ExchangeError', // "response error"
+                '10005' => '\\ccxt\\ExchangeError', // "internal error"
+                '10006' => '\\ccxt\\ExchangeError', // "invalid credentials"
+                '10007' => '\\ccxt\\ExchangeError', // "params error"
+                '10008' => '\\ccxt\\ExchangeError', // "invalid otp"
+                '10009' => '\\ccxt\\ExchangeError', // "invalid asset pin"
+                '10010' => '\\ccxt\\ExchangeError', // "email or password wrong"
+                '10011' => '\\ccxt\\ExchangeError', // "system error"
+                '10012' => '\\ccxt\\ExchangeError', // "invalid password reset token"
+                '10013' => '\\ccxt\\ExchangeError', // "resouce not found"
+                '10014' => '\\ccxt\\ExchangeError', // "Current broker does not support password auth."
+                '10015' => '\\ccxt\\ExchangeError', // "Current broker does not support cookie auth."
+                '10016' => '\\ccxt\\ExchangeError', // "broker not support login with third-party authentication"
+                '10017' => '\\ccxt\\ExchangeError', // "favourite broker market not existed"
+                '10018' => '\\ccxt\\AuthenticationError', // "invalid token"
+                '10019' => '\\ccxt\\ExchangeError', // "failed to create token"
+                '10022' => '\\ccxt\\ExchangeError', // "invalid auth schema"
+                '10023' => '\\ccxt\\ExchangeError', // "unauthenticated"
+                '10024' => '\\ccxt\\ExchangeError', // "invalid otp secret"
+                '10025' => '\\ccxt\\ExchangeError', // "missing otp code"
+                '10026' => '\\ccxt\\ExchangeError', // "invalid asset pin reset token"
+                '10027' => '\\ccxt\\ExchangeError', // "invalid verification state"
+                '10028' => '\\ccxt\\ExchangeError', // "invalid otp reset token"
+                '30000' => '\\ccxt\\ExchangeError', // "Unknown Error"
+                '30001' => '\\ccxt\\ExchangeError', // "Unknown Asset"
+                '30002' => '\\ccxt\\ExchangeError', // "Venezia Error"
+                '30003' => '\\ccxt\\ExchangeError', // "Invalid Field"
+                '30004' => '\\ccxt\\InsufficientFunds', // "Insufficient Balance"
+                '30005' => '\\ccxt\\ExchangeError', // "Perimission Denied"
+                '30006' => '\\ccxt\\ExchangeError', // "You are not credible enough to create withdrawal."
+                '30007' => '\\ccxt\\ExchangeError', // "Current broker does not support admin withdrawal now."
+                '30008' => '\\ccxt\\ExchangeError', // "Memo Not Found"
+                '30009' => '\\ccxt\\ExchangeError', // "Withdraw Suspended"
+                '40001' => '\\ccxt\\ExchangeError', // "Market not found"
+                '40002' => '\\ccxt\\InvalidOrder', // "Price too low"
+                '40003' => '\\ccxt\\InvalidOrder', // "Amount too low"
+                '40004' => '\\ccxt\\InvalidOrder', // "Filled amount too large"
+                '40000' => '\\ccxt\\ExchangeError', // "Unknown Error"
+            ),
             'fees' => array (
                 'trading' => array (
                     'maker' => 0.1 / 100,
@@ -223,7 +267,7 @@ class bigone extends Exchange {
         $this->load_markets();
         $market = $this->market ($symbol);
         $request = array (
-            'symbol' => $market['id'],
+            'market_id' => $market['id'],
         );
         $response = $this->privateGetViewerOrders (array_merge ($request, $params));
         return $this->parse_orders($response['data']['edges'], $market, $since, $limit);

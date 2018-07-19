@@ -7,6 +7,8 @@ from ccxt.base.exchange import Exchange
 import math
 from ccxt.base.errors import ExchangeError
 from ccxt.base.errors import AuthenticationError
+from ccxt.base.errors import InsufficientFunds
+from ccxt.base.errors import InvalidOrder
 
 
 class bigone (Exchange):
@@ -58,6 +60,50 @@ class bigone (Exchange):
                         'viewer/orders/cancel_all',
                     ],
                 },
+            },
+            'exceptions': {
+                # see https://open.big.one/docs/api_error_codes.html
+                '10001': ExchangeError,  # "syntax error"
+                '10002': ExchangeError,  # "cannot query fields"
+                '10003': ExchangeError,  # "service timeout"
+                '10004': ExchangeError,  # "response error"
+                '10005': ExchangeError,  # "internal error"
+                '10006': ExchangeError,  # "invalid credentials"
+                '10007': ExchangeError,  # "params error"
+                '10008': ExchangeError,  # "invalid otp"
+                '10009': ExchangeError,  # "invalid asset pin"
+                '10010': ExchangeError,  # "email or password wrong"
+                '10011': ExchangeError,  # "system error"
+                '10012': ExchangeError,  # "invalid password reset token"
+                '10013': ExchangeError,  # "resouce not found"
+                '10014': ExchangeError,  # "Current broker does not support password auth."
+                '10015': ExchangeError,  # "Current broker does not support cookie auth."
+                '10016': ExchangeError,  # "broker not support login with third-party authentication"
+                '10017': ExchangeError,  # "favourite broker market not existed"
+                '10018': AuthenticationError,  # "invalid token"
+                '10019': ExchangeError,  # "failed to create token"
+                '10022': ExchangeError,  # "invalid auth schema"
+                '10023': ExchangeError,  # "unauthenticated"
+                '10024': ExchangeError,  # "invalid otp secret"
+                '10025': ExchangeError,  # "missing otp code"
+                '10026': ExchangeError,  # "invalid asset pin reset token"
+                '10027': ExchangeError,  # "invalid verification state"
+                '10028': ExchangeError,  # "invalid otp reset token"
+                '30000': ExchangeError,  # "Unknown Error"
+                '30001': ExchangeError,  # "Unknown Asset"
+                '30002': ExchangeError,  # "Venezia Error"
+                '30003': ExchangeError,  # "Invalid Field"
+                '30004': InsufficientFunds,  # "Insufficient Balance"
+                '30005': ExchangeError,  # "Perimission Denied"
+                '30006': ExchangeError,  # "You are not credible enough to create withdrawal."
+                '30007': ExchangeError,  # "Current broker does not support admin withdrawal now."
+                '30008': ExchangeError,  # "Memo Not Found"
+                '30009': ExchangeError,  # "Withdraw Suspended"
+                '40001': ExchangeError,  # "Market not found"
+                '40002': InvalidOrder,  # "Price too low"
+                '40003': InvalidOrder,  # "Amount too low"
+                '40004': InvalidOrder,  # "Filled amount too large"
+                '40000': ExchangeError,  # "Unknown Error"
             },
             'fees': {
                 'trading': {
@@ -214,7 +260,7 @@ class bigone (Exchange):
         self.load_markets()
         market = self.market(symbol)
         request = {
-            'symbol': market['id'],
+            'market_id': market['id'],
         }
         response = self.privateGetViewerOrders(self.extend(request, params))
         return self.parse_orders(response['data']['edges'], market, since, limit)
