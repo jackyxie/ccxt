@@ -305,11 +305,11 @@ class bigone (Exchange):
             id = balance['asset_id']
             currency = self.common_currency_code(id)
             account = {
-                'free': float(balance['balance']),
+                'free': 0.0,
                 'used': float(balance['locked_balance']),
-                'total': 0.0,
+                'total': float(balance['balance']),
             }
-            account['total'] = self.sum(account['free'], account['used'])
+            account['total'] = self.sum(account['total'], -account['used'])
             result[currency] = account
         return self.parse_balance(result)
 

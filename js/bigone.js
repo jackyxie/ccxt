@@ -314,11 +314,11 @@ module.exports = class bigone extends Exchange {
             let id = balance['asset_id'];
             let currency = this.commonCurrencyCode (id);
             let account = {
-                'free': parseFloat (balance['balance']),
+                'free': 0.0,
                 'used': parseFloat (balance['locked_balance']),
-                'total': 0.0,
+                'total': parseFloat (balance['balance']),
             };
-            account['total'] = this.sum (account['free'], account['used']);
+            account['total'] = this.sum (account['total'], -account['used']);
             result[currency] = account;
         }
         return this.parseBalance (result);
