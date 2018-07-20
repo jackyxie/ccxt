@@ -4862,7 +4862,7 @@ module.exports = class bigone extends Exchange {
         if (status === 'filled') {
             status = 'closed';
         }
-        let side = this.safeInteger (order, 'side');
+        let side = this.safeString (order, 'side');
         if (side === 'BID') {
             side = 'buy';
         } else {

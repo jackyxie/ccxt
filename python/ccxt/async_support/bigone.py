@@ -331,7 +331,7 @@ class bigone (Exchange):
         status = self.parse_order_status(order['state'])
         if status == 'filled':
             status = 'closed'
-        side = self.safe_integer(order, 'side')
+        side = self.safe_string(order, 'side')
         if side == 'BID':
             side = 'buy'
         else:

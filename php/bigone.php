@@ -346,7 +346,7 @@ class bigone extends Exchange {
         if ($status === 'filled') {
             $status = 'closed';
         }
-        $side = $this->safe_integer($order, 'side');
+        $side = $this->safe_string($order, 'side');
         if ($side === 'BID') {
             $side = 'buy';
         } else {
