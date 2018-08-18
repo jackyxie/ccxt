@@ -207,6 +207,7 @@ The ccxt library currently supports the following cryptocurrency exchange market
 |                          |                        | \|Russia \| |yobit| \| yobit \| `YoBit <https://www.yobit.net>`__ \| 3 \| `API <https://www.yobit.net/en/api/>`__ \|                                                                                |
 |                          |                        | \|Seychelles \| |bitmex| \| bitmex \| `BitMEX <https://www.bitmex.com/register/rm3C16>`__ \| 1 \| `API <https://www.bitmex.com/app/apiOverview>`__ \|                                               |
 |                          |                        | \|Singapore \| |anxpro| \| anxpro \| `ANXPro <https://anxpro.com>`__ \| 2 \| `API <http://docs.anxv2.apiary.io>`__ \|                                                                               |
+|                          |                        | \|Singapore \| |bitforex| \| bitforex \| `BitForex <https://www.bitforex.com>`__ \| 1 \| `API <https://github.com/bitforexapi/API_Docs/wiki>`__ \|                                                  |
 |                          |                        | \|Singapore \| |fybsg| \| fybsg \| `FYB-SG <https://www.fybsg.com>`__ \| \* \| `API <http://docs.fyb.apiary.io>`__ \|                                                                               |
 |                          |                        | \|Singapore \| |luno| \| luno \| `luno <https://www.luno.com>`__ \| 1 \| `API <https://www.luno.com/en/api>`__ \|                                                                                   |
 |                          |                        | \|Singapore \| |quoinex| \| quoinex \| `QUOINEX <https://quoinex.com/>`__ \| 2 \| `API <https://developers.quoine.com>`__ \|                                                                        |
@@ -358,6 +359,7 @@ The ccxt library currently supports the following cryptocurrency exchange market
 .. |xbtce| image:: https://user-images.githubusercontent.com/1294454/28059414-e235970c-662c-11e7-8c3a-08e31f78684b.jpg
 .. |yobit| image:: https://user-images.githubusercontent.com/1294454/27766910-cdcbfdae-5eea-11e7-9859-03fea873272d.jpg
 .. |bitmex| image:: https://user-images.githubusercontent.com/1294454/27766319-f653c6e6-5ed4-11e7-933d-f0bc3699ae8f.jpg
+.. |bitforex| image:: 
 .. |fybsg| image:: https://user-images.githubusercontent.com/1294454/27766513-3364d56a-5edb-11e7-9e6b-d5898bb89c81.jpg
 .. |luno| image:: https://user-images.githubusercontent.com/1294454/27766607-8c1a69d8-5ede-11e7-930c-540b5eb9be24.jpg
 .. |ice3x| image:: https://user-images.githubusercontent.com/1294454/38012176-11616c32-3269-11e8-9f05-e65cf885bb15.jpg

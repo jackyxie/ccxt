@@ -64,6 +64,7 @@ class Exchange {
         'bitfinex',
         'bitfinex2',
         'bitflyer',
+        'bitforex',
         'bithumb',
         'bitkk',
         'bitlish',
