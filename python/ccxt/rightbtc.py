@@ -60,7 +60,7 @@ class rightbtc (Exchange):
             'api': {
                 'public': {
                     'get': [
-                        'getAssetsTradingPairs/zh',
+                        # 'getAssetsTradingPairs/zh',  # 404
                         'trading_pairs',
                         'ticker/{trading_pair}',
                         'tickers',
@@ -136,19 +136,23 @@ class rightbtc (Exchange):
                     },
                 },
             },
+            'commonCurrencies': {
+                'XRB': 'NANO',
+            },
             'exceptions': {
                 'ERR_USERTOKEN_NOT_FOUND': AuthenticationError,
                 'ERR_ASSET_NOT_EXISTS': ExchangeError,
                 'ERR_ASSET_NOT_AVAILABLE': ExchangeError,
                 'ERR_BALANCE_NOT_ENOUGH': InsufficientFunds,
                 'ERR_CREATE_ORDER': InvalidOrder,
+                'ERR_CANDLESTICK_DATA': ExchangeError,
             },
         })
 
     def fetch_markets(self):
         response = self.publicGetTradingPairs()
-        zh = self.publicGetGetAssetsTradingPairsZh()
-        markets = self.extend(zh['result'], response['status']['message'])
+        # zh = self.publicGetGetAssetsTradingPairsZh()
+        markets = self.extend(response['status']['message'])
         marketIds = list(markets.keys())
         result = []
         for i in range(0, len(marketIds)):
@@ -703,13 +707,14 @@ class rightbtc (Exchange):
             return  # fallback to default error handler
         if (body[0] == '{') or (body[0] == '['):
             response = json.loads(body)
-            if 'success' in response:
+            status = self.safe_value(response, 'status')
+            if status is not None:
                 #
                 #     {"status":{"success":0,"message":"ERR_USERTOKEN_NOT_FOUND"}}
                 #
-                success = self.safe_string(response, 'success')
+                success = self.safe_string(status, 'success')
                 if success != '1':
-                    message = self.safe_string(response, 'message')
+                    message = self.safe_string(status, 'message')
                     feedback = self.id + ' ' + self.json(response)
                     exceptions = self.exceptions
                     if message in exceptions:

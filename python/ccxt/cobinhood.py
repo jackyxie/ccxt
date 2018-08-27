@@ -29,8 +29,10 @@ class cobinhood (Exchange):
                 'fetchClosedOrders': True,
                 'fetchOrderTrades': True,
                 'fetchOrder': True,
-                'fetchDepositAddress': False,
-                'createDepositAddress': False,
+                'fetchDepositAddress': True,
+                'createDepositAddress': True,
+                'fetchDeposits': True,
+                'fetchWithdrawals': True,
                 'withdraw': False,
                 'fetchMyTrades': True,
             },
@@ -110,9 +112,20 @@ class cobinhood (Exchange):
                         'wallet/generic_deposits/{generic_deposit_id}',
                         'wallet/generic_withdrawals',
                         'wallet/generic_withdrawals/{generic_withdrawal_id}',
+                        # older endpoints
+                        'wallet/deposit_addresses',
+                        'wallet/withdrawal_addresses',
+                        'wallet/withdrawals/{withdrawal_id}',
+                        'wallet/withdrawals',
+                        'wallet/deposits/{deposit_id}',
+                        'wallet/deposits',
                     ],
                     'post': [
                         'trading/orders',
+                        # older endpoints
+                        'wallet/deposit_addresses',
+                        'wallet/withdrawal_addresses',
+                        'wallet/withdrawals',
                     ],
                     'delete': [
                         'trading/orders/{order_id}',
@@ -137,6 +150,7 @@ class cobinhood (Exchange):
             },
             'commonCurrencies': {
                 'SMT': 'SocialMedia.Market',
+                'MTN': 'Motion Token',
             },
         })
 
@@ -230,10 +244,16 @@ class cobinhood (Exchange):
         return result
 
     def parse_ticker(self, ticker, market=None):
+        symbol = None
         if market is None:
             marketId = self.safe_string(ticker, 'trading_pair_id')
-            market = self.find_market(marketId)
-        symbol = None
+            if marketId in self.markets_by_id:
+                market = self.markets_by_id[marketId]
+            else:
+                baseId, quoteId = marketId.split('-')
+                base = self.common_currency_code(baseId)
+                quote = self.common_currency_code(quoteId)
+                symbol = base + '/' + quote
         if market is not None:
             symbol = market['symbol']
         timestamp = self.safe_integer(ticker, 'timestamp')
@@ -297,7 +317,7 @@ class cobinhood (Exchange):
         price = self.safe_float(trade, 'price')
         amount = self.safe_float(trade, 'size')
         cost = price * amount
-        side = trade['maker_side'] == 'sell' if 'bid' else 'buy'
+        side = 'sell' if (trade['maker_side'] == 'bid') else 'buy'
         return {
             'info': trade,
             'timestamp': timestamp,
@@ -395,26 +415,42 @@ class cobinhood (Exchange):
         return status
 
     def parse_order(self, order, market=None):
+        #
+        #     {
+        #         'completed_at': None,
+        #         'eq_price': '0',
+        #         'filled': '0',
+        #         'id': '88426800-beae-4407-b4a1-f65cef693542',
+        #         'price': '0.00000507',
+        #         'side': 'bid',
+        #         'size': '3503.6489',
+        #         'source': 'exchange',
+        #         'state': 'open',
+        #         'timestamp': 1535258403597,
+        #         'trading_pair_id': 'ACT-BTC',
+        #         'type': 'limit',
+        #     }
+        #
         symbol = None
         if market is None:
-            marketId = self.safe_string(order, 'trading_pair')
-            marketId = self.safe_string(order, 'trading_pair_id', marketId)
+            marketId = self.safe_string_2(order, 'trading_pair', 'trading_pair_id')
             market = self.safe_value(self.markets_by_id, marketId)
         if market is not None:
             symbol = market['symbol']
         timestamp = self.safe_integer(order, 'timestamp')
-        price = self.safe_float(order, 'eq_price')
+        price = self.safe_float(order, 'price')
+        average = self.safe_float(order, 'eq_price')
         amount = self.safe_float(order, 'size')
         filled = self.safe_float(order, 'filled')
         remaining = None
         cost = None
+        if filled is not None and average is not None:
+            cost = average * filled
+        elif average is not None:
+            cost = average * amount
         if amount is not None:
             if filled is not None:
                 remaining = amount - filled
-            if filled is not None and price is not None:
-                cost = price * filled
-            elif price is not None:
-                cost = price * amount
         status = self.parse_order_status(self.safe_string(order, 'state'))
         side = self.safe_string(order, 'side')
         if side == 'bid':
@@ -432,6 +468,7 @@ class cobinhood (Exchange):
             'side': side,
             'price': price,
             'cost': cost,
+            'average': average,
             'amount': amount,
             'filled': filled,
             'remaining': remaining,
@@ -497,6 +534,125 @@ class cobinhood (Exchange):
             request['trading_pair_id'] = market['id']
         response = self.privateGetTradingTrades(self.extend(request, params))
         return self.parse_trades(response['result']['trades'], market, since, limit)
+
+    def create_deposit_address(self, code, params={}):
+        self.load_markets()
+        currency = self.currency(code)
+        response = self.privatePostWalletDepositAddresses({
+            'currency': currency['id'],
+        })
+        address = self.safe_string(response['result']['deposit_address'], 'address')
+        self.check_address(address)
+        return {
+            'currency': code,
+            'address': address,
+            'info': response,
+        }
+
+    def fetch_deposit_address(self, code, params={}):
+        self.load_markets()
+        currency = self.currency(code)
+        response = self.privateGetWalletDepositAddresses(self.extend({
+            'currency': currency['id'],
+        }, params))
+        addresses = self.safe_value(response['result'], 'deposit_addresses', [])
+        address = None
+        if len(addresses) > 0:
+            address = self.safe_string(addresses[0], 'address')
+        self.check_address(address)
+        return {
+            'currency': code,
+            'address': address,
+            'info': response,
+        }
+
+    def withdraw(self, code, amount, address, params={}):
+        self.load_markets()
+        currency = self.currency(code)
+        response = self.privatePostWalletWithdrawals(self.extend({
+            'currency': currency['id'],
+            'amount': amount,
+            'address': address,
+        }, params))
+        return {
+            'id': response['result']['withdrawal_id'],
+            'info': response,
+        }
+
+    def fetch_deposits(self, code=None, since=None, limit=None, params={}):
+        self.load_markets()
+        if code is None:
+            raise ExchangeError(self.id + ' fetchDeposits() requires a currency code arguemnt')
+        currency = self.currency(code)
+        request = {
+            'currency': currency['id'],
+        }
+        response = self.privateGetWalletDeposits(self.extend(request, params))
+        return self.parseTransactions(response['result']['deposits'], currency)
+
+    def fetch_withdrawals(self, code=None, since=None, limit=None, params={}):
+        self.load_markets()
+        if code is None:
+            raise ExchangeError(self.id + ' fetchWithdrawals() requires a currency code arguemnt')
+        currency = self.currency(code)
+        request = {
+            'currency': currency['id'],
+        }
+        response = self.privateGetWalletWithdrawals(self.extend(request, params))
+        return self.parseTransactions(response['result']['withdrawals'], currency)
+
+    def parse_transaction_status(self, status):
+        statuses = {
+            'tx_pending_two_factor_auth': 'pending',
+            'tx_pending_email_auth': 'pending',
+            'tx_pending_approval': 'pending',
+            'tx_approved': 'pending',
+            'tx_processing': 'pending',
+            'tx_pending': 'pending',
+            'tx_sent': 'pending',
+            'tx_cancelled': 'canceled',
+            'tx_timeout': 'error',
+            'tx_invalid': 'error',
+            'tx_rejected': 'error',
+            'tx_confirmed': 'ok',
+        }
+        return statuses[status] if (status in list(statuses.keys())) else status.lower()
+
+    def parse_transaction(self, transaction, currency=None):
+        timestamp = self.safe_integer(transaction, 'created_at')
+        datetime = None
+        if timestamp is not None:
+            datetime = self.iso8601(timestamp)
+        code = None
+        if currency is None:
+            currencyId = self.safe_string(transaction, 'currency')
+            if currencyId in self.currencies_by_id:
+                currency = self.currencies_by_id[currencyId]
+            else:
+                code = self.common_currency_code(currencyId)
+        if currency is not None:
+            code = currency['code']
+        type = self.safe_string(transaction, 'type')
+        if type is not None:
+            typeParts = type.split('_')
+            type = typeParts[0]
+        return {
+            'info': transaction,
+            'id': self.safe_string(transaction, 'withdrawal_id'),
+            'txid': self.safe_string(transaction, 'txhash'),
+            'timestamp': timestamp,
+            'datetime': datetime,
+            'address': None,  # or is it defined?
+            'type': type,  # direction of the transaction,('deposit' | 'withdraw')
+            'amount': self.safe_float(transaction, 'amount'),
+            'currency': code,
+            'status': self.parse_transaction_status(transaction['status']),
+            'updated': None,
+            'fee': {
+                'cost': self.safe_float(transaction, 'fee'),
+                'rate': None,
+            },
+        }
 
     def sign(self, path, api='public', method='GET', params={}, headers=None, body=None):
         url = self.urls['api'] + '/' + self.version + '/' + self.implode_params(path, params)

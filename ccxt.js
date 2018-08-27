@@ -37,7 +37,7 @@ const Exchange  = require ('./js/base/Exchange')
 //-----------------------------------------------------------------------------
 // this is updated by vss.js when building
 
-const version = '1.16.44'
+const version = '1.17.194'
 
 Exchange.ccxtVersion = version
 
@@ -50,6 +50,7 @@ const exchanges = {
     'allcoin':                 require ('./js/allcoin.js'),
     'anxpro':                  require ('./js/anxpro.js'),
     'anybits':                 require ('./js/anybits.js'),
+    'bcex':                    require ('./js/bcex.js'),
     'bibox':                   require ('./js/bibox.js'),
     'bigone':                  require ('./js/bigone.js'),
     'binance':                 require ('./js/binance.js'),
@@ -90,6 +91,7 @@ const exchanges = {
     'chilebit':                require ('./js/chilebit.js'),
     'cobinhood':               require ('./js/cobinhood.js'),
     'coinbase':                require ('./js/coinbase.js'),
+    'coinbaseprime':           require ('./js/coinbaseprime.js'),
     'coinbasepro':             require ('./js/coinbasepro.js'),
     'coincheck':               require ('./js/coincheck.js'),
     'coinegg':                 require ('./js/coinegg.js'),
@@ -158,9 +160,11 @@ const exchanges = {
     'rightbtc':                require ('./js/rightbtc.js'),
     'southxchange':            require ('./js/southxchange.js'),
     'surbitcoin':              require ('./js/surbitcoin.js'),
+    'theocean':                require ('./js/theocean.js'),
     'therock':                 require ('./js/therock.js'),
     'tidebit':                 require ('./js/tidebit.js'),
     'tidex':                   require ('./js/tidex.js'),
+    'uex':                     require ('./js/uex.js'),
     'urdubit':                 require ('./js/urdubit.js'),
     'vaultoro':                require ('./js/vaultoro.js'),
     'vbtc':                    require ('./js/vbtc.js'),

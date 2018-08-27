@@ -47,7 +47,7 @@ class rightbtc extends Exchange {
             'api' => array (
                 'public' => array (
                     'get' => array (
-                        'getAssetsTradingPairs/zh',
+                        // 'getAssetsTradingPairs/zh', // 404
                         'trading_pairs',
                         'ticker/{trading_pair}',
                         'tickers',
@@ -123,20 +123,24 @@ class rightbtc extends Exchange {
                     ),
                 ),
             ),
+            'commonCurrencies' => array (
+                'XRB' => 'NANO',
+            ),
             'exceptions' => array (
                 'ERR_USERTOKEN_NOT_FOUND' => '\\ccxt\\AuthenticationError',
                 'ERR_ASSET_NOT_EXISTS' => '\\ccxt\\ExchangeError',
                 'ERR_ASSET_NOT_AVAILABLE' => '\\ccxt\\ExchangeError',
                 'ERR_BALANCE_NOT_ENOUGH' => '\\ccxt\\InsufficientFunds',
                 'ERR_CREATE_ORDER' => '\\ccxt\\InvalidOrder',
+                'ERR_CANDLESTICK_DATA' => '\\ccxt\\ExchangeError',
             ),
         ));
     }
 
     public function fetch_markets () {
         $response = $this->publicGetTradingPairs ();
-        $zh = $this->publicGetGetAssetsTradingPairsZh ();
-        $markets = array_merge ($zh['result'], $response['status']['message']);
+        // $zh = $this->publicGetGetAssetsTradingPairsZh ();
+        $markets = array_merge ($response['status']['message']);
         $marketIds = is_array ($markets) ? array_keys ($markets) : array ();
         $result = array ();
         for ($i = 0; $i < count ($marketIds); $i++) {
@@ -744,13 +748,14 @@ class rightbtc extends Exchange {
             return; // fallback to default error handler
         if (($body[0] === '{') || ($body[0] === '[')) {
             $response = json_decode ($body, $as_associative_array = true);
-            if (is_array ($response) && array_key_exists ('success', $response)) {
+            $status = $this->safe_value($response, 'status');
+            if ($status !== null) {
                 //
-                //     array ("status":{"$success":0,"$message":"ERR_USERTOKEN_NOT_FOUND")}
+                //     array ("$status":{"$success":0,"$message":"ERR_USERTOKEN_NOT_FOUND")}
                 //
-                $success = $this->safe_string($response, 'success');
+                $success = $this->safe_string($status, 'success');
                 if ($success !== '1') {
-                    $message = $this->safe_string($response, 'message');
+                    $message = $this->safe_string($status, 'message');
                     $feedback = $this->id . ' ' . $this->json ($response);
                     $exceptions = $this->exceptions;
                     if (is_array ($exceptions) && array_key_exists ($message, $exceptions)) {

@@ -14,13 +14,14 @@ module.exports = class coinfalcon extends Exchange {
             'name': 'CoinFalcon',
             'countries': [ 'GB' ],
             'rateLimit': 1000,
+            'version': 'v1',
             'has': {
                 'fetchTickers': true,
                 'fetchOpenOrders': true,
             },
             'urls': {
                 'logo': 'https://user-images.githubusercontent.com/1294454/41822275-ed982188-77f5-11e8-92bb-496bcd14ca52.jpg',
-                'api': 'https://coinfalcon.com/api/v1',
+                'api': 'https://coinfalcon.com',
                 'www': 'https://coinfalcon.com',
                 'doc': 'https://docs.coinfalcon.com',
                 'fees': 'https://coinfalcon.com/fees',
@@ -38,20 +39,22 @@ module.exports = class coinfalcon extends Exchange {
                     'get': [
                         'user/accounts',
                         'user/orders',
+                        'user/orders/{id}',
                         'user/trades',
                     ],
                     'post': [
                         'user/orders',
                     ],
                     'delete': [
-                        'user/orders',
+                        'user/orders/{id}',
                     ],
                 },
             },
             'fees': {
                 'trading': {
-                    'maker': 0.0025,
-                    'taker': 0.0025,
+                    'tierBased': true,
+                    'maker': 0.0,
+                    'taker': 0.002, // tiered fee starts at 0.2%
                 },
             },
             'precision': {
@@ -223,9 +226,14 @@ module.exports = class coinfalcon extends Exchange {
 
     parseOrder (order, market = undefined) {
         if (typeof market === 'undefined') {
-            market = this.marketsById[order['market']];
+            let marketId = this.safeString (order, 'market');
+            if (marketId in this.markets_by_id)
+                market = this.markets_by_id[marketId];
         }
-        let symbol = market['symbol'];
+        let symbol = undefined;
+        if (typeof market !== 'undefined') {
+            symbol = market['symbol'];
+        }
         let timestamp = this.parse8601 (order['created_at']);
         let price = parseFloat (order['price']);
         let amount = this.safeFloat (order, 'size');
@@ -285,11 +293,19 @@ module.exports = class coinfalcon extends Exchange {
 
     async cancelOrder (id, symbol = undefined, params = {}) {
         await this.loadMarkets ();
-        let response = await this.privateDeleteUserOrders (this.extend ({
+        let response = await this.privateDeleteUserOrdersId (this.extend ({
             'id': id,
         }, params));
         let market = this.market (symbol);
         return this.parseOrder (response['data'], market);
+    }
+
+    async fetchOrder (id, symbol = undefined, params = {}) {
+        await this.loadMarkets ();
+        let response = await this.privateGetUserOrdersId (this.extend ({
+            'id': id,
+        }, params));
+        return this.parseOrder (response['data']);
     }
 
     async fetchOpenOrders (symbol = undefined, since = undefined, limit = undefined, params = {}) {
@@ -311,7 +327,8 @@ module.exports = class coinfalcon extends Exchange {
     }
 
     sign (path, api = 'public', method = 'GET', params = {}, headers = undefined, body = undefined) {
-        let url = this.urls['api'] + '/' + this.implodeParams (path, params);
+        let request = '/' + 'api/' + this.version + '/' + this.implodeParams (path, params);
+        let url = this.urls['api'] + request;
         let query = this.omit (params, this.extractParams (path));
         if (api === 'public') {
             if (Object.keys (query).length)
@@ -325,10 +342,7 @@ module.exports = class coinfalcon extends Exchange {
                 body = this.json (query);
             }
             let seconds = this.seconds ().toString ();
-            let requestPath = url.split ('/');
-            requestPath = requestPath.slice (3);
-            requestPath = '/' + requestPath.join ('/');
-            let payload = [seconds, method, requestPath].join ('|');
+            let payload = [ seconds, method, request ].join ('|');
             if (body) {
                 payload += '|' + body;
             }

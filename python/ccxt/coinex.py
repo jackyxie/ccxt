@@ -29,6 +29,7 @@ class coinex (Exchange):
                 'fetchOpenOrders': True,
                 'fetchClosedOrders': True,
                 'fetchMyTrades': True,
+                'withdraw': True,
             },
             'timeframes': {
                 '1m': '1min',
@@ -75,7 +76,8 @@ class coinex (Exchange):
                 },
                 'private': {
                     'get': [
-                        'balance',
+                        'balance/coin/withdraw',
+                        'balance/info',
                         'order',
                         'order/pending',
                         'order/finished',
@@ -83,10 +85,12 @@ class coinex (Exchange):
                         'order/user/deals',
                     ],
                     'post': [
+                        'balance/coin/withdraw',
                         'order/limit',
                         'order/market',
                     ],
                     'delete': [
+                        'balance/coin/withdraw',
                         'order/pending',
                     ],
                 },
@@ -116,6 +120,9 @@ class coinex (Exchange):
             'precision': {
                 'amount': 8,
                 'price': 8,
+            },
+            'options': {
+                'createMarketBuyOrderRequiresPrice': True,
             },
         })
 
@@ -245,9 +252,11 @@ class coinex (Exchange):
 
     def parse_trade(self, trade, market=None):
         # self method parses both public and private trades
-        timestamp = self.safe_integer(trade, 'create_time') * 1000
+        timestamp = self.safe_integer(trade, 'create_time')
         if timestamp is None:
             timestamp = self.safe_integer(trade, 'date_ms')
+        else:
+            timestamp = timestamp * 1000
         tradeId = self.safe_string(trade, 'id')
         orderId = self.safe_string(trade, 'order_id')
         price = self.safe_float(trade, 'price')
@@ -288,7 +297,7 @@ class coinex (Exchange):
 
     def parse_ohlcv(self, ohlcv, market=None, timeframe='5m', since=None, limit=None):
         return [
-            ohlcv[0],
+            ohlcv[0] * 1000,
             float(ohlcv[1]),
             float(ohlcv[3]),
             float(ohlcv[4]),
@@ -307,7 +316,27 @@ class coinex (Exchange):
 
     def fetch_balance(self, params={}):
         self.load_markets()
-        response = self.privateGetBalance(params)
+        response = self.privateGetBalanceInfo(params)
+        #
+        #     {
+        #       "code": 0,
+        #       "data": {
+        #         "BCH": {                    # BCH account
+        #           "available": "13.60109",   # Available BCH
+        #           "frozen": "0.00000"        # Frozen BCH
+        #         },
+        #         "BTC": {                    # BTC account
+        #           "available": "32590.16",   # Available BTC
+        #           "frozen": "7000.00"        # Frozen BTC
+        #         },
+        #         "ETH": {                    # ETH account
+        #           "available": "5.06000",    # Available ETH
+        #           "frozen": "0.00000"        # Frozen ETH
+        #         }
+        #       },
+        #       "message": "Ok"
+        #     }
+        #
         result = {'info': response}
         balances = response['data']
         currencies = list(balances.keys())
@@ -368,17 +397,26 @@ class coinex (Exchange):
         }
 
     def create_order(self, symbol, type, side, amount, price=None, params={}):
+        amount = float(amount)  # self line is deprecated
+        if type == 'market':
+            # for market buy it requires the amount of quote currency to spend
+            if side == 'buy':
+                if self.options['createMarketBuyOrderRequiresPrice']:
+                    if price is None:
+                        raise InvalidOrder(self.id + " createOrder() requires the price argument with market buy orders to calculate total order cost(amount to spend), where cost = amount * price. Supply a price argument to createOrder() call if you want the cost to be calculated for you from price and amount, or, alternatively, add .options['createMarketBuyOrderRequiresPrice'] = False to supply the cost in the amount argument(the exchange-specific behaviour)")
+                    else:
+                        price = float(price)  # self line is deprecated
+                        amount = amount * price
         self.load_markets()
         method = 'privatePostOrder' + self.capitalize(type)
         market = self.market(symbol)
-        amount = float(amount)
         request = {
             'market': market['id'],
             'amount': self.amount_to_precision(symbol, amount),
             'type': side,
         }
         if type == 'limit':
-            price = float(price)
+            price = float(price)  # self line is deprecated
             request['price'] = self.price_to_precision(symbol, price)
         response = getattr(self, method)(self.extend(request, params))
         order = self.parse_order(response['data'], market)
@@ -396,6 +434,8 @@ class coinex (Exchange):
         return self.parse_order(response['data'], market)
 
     def fetch_order(self, id, symbol=None, params={}):
+        if symbol is None:
+            raise ExchangeError(self.id + ' fetchOrder requires a symbol argument')
         self.load_markets()
         market = self.market(symbol)
         response = self.privateGetOrder(self.extend({
@@ -404,7 +444,9 @@ class coinex (Exchange):
         }, params))
         return self.parse_order(response['data'], market)
 
-    def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
+    def fetch_orders_by_status(self, status, symbol=None, since=None, limit=None, params={}):
+        if symbol is None:
+            raise ExchangeError(self.id + ' fetchOrders requires a symbol argument')
         self.load_markets()
         market = self.market(symbol)
         request = {
@@ -412,21 +454,19 @@ class coinex (Exchange):
         }
         if limit is not None:
             request['limit'] = limit
-        response = self.privateGetOrderPending(self.extend(request, params))
+        method = 'privateGetOrder' + self.capitalize(status)
+        response = getattr(self, method)(self.extend(request, params))
         return self.parse_orders(response['data']['data'], market)
+
+    def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
+        return self.fetch_orders_by_status('pending', symbol, since, limit, params)
 
     def fetch_closed_orders(self, symbol=None, since=None, limit=None, params={}):
-        self.load_markets()
-        market = self.market(symbol)
-        request = {
-            'market': market['id'],
-        }
-        if limit is not None:
-            request['limit'] = limit
-        response = self.privateGetOrderFinished(self.extend(request, params))
-        return self.parse_orders(response['data']['data'], market)
+        return self.fetch_orders_by_status('finished', symbol, since, limit, params)
 
     def fetch_my_trades(self, symbol=None, since=None, limit=None, params={}):
+        if symbol is None:
+            raise ExchangeError(self.id + ' fetchMyTrades requires a symbol argument')
         self.load_markets()
         market = self.market(symbol)
         response = self.privateGetOrderUserDeals(self.extend({
@@ -435,6 +475,23 @@ class coinex (Exchange):
             'limit': 100,
         }, params))
         return self.parse_trades(response['data']['data'], market, since, limit)
+
+    def withdraw(self, code, amount, address, tag=None, params={}):
+        self.check_address(address)
+        self.load_markets()
+        currency = self.currency(code)
+        if tag:
+            address = address + ':' + tag
+        request = {
+            'coin_type': currency['id'],
+            'coin_address': address,
+            'actual_amount': float(amount),
+        }
+        response = self.privatePostBalanceCoinWithdraw(self.extend(request, params))
+        return {
+            'info': response,
+            'id': self.safe_string(response, 'coin_withdraw_id'),
+        }
 
     def nonce(self):
         return self.milliseconds()

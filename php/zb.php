@@ -19,9 +19,11 @@ class zb extends Exchange {
             'has' => array (
                 'CORS' => false,
                 'createMarketOrder' => false,
+                'fetchDepositAddress' => true,
                 'fetchOrder' => true,
                 'fetchOrders' => true,
                 'fetchOpenOrders' => true,
+                'fetchOHLCV' => true,
                 'withdraw' => true,
             ),
             'timeframes' => array (
@@ -69,18 +71,20 @@ class zb extends Exchange {
             'urls' => array (
                 'logo' => 'https://user-images.githubusercontent.com/1294454/32859187-cd5214f0-ca5e-11e7-967d-96568e2e2bd1.jpg',
                 'api' => array (
-                    'public' => 'http://api.zb.com/data', // no https for public API
-                    'private' => 'https://trade.zb.com/api',
+                    'public' => 'http://api.zb.cn/data', // no https for public API
+                    'private' => 'https://trade.zb.cn/api',
                 ),
                 'www' => 'https://www.zb.com',
                 'doc' => 'https://www.zb.com/i/developer',
                 'fees' => 'https://www.zb.com/i/rate',
+                'referral' => 'https://vip.zb.com/user/register?recommendCode=bn070u',
             ),
             'api' => array (
                 'public' => array (
                     'get' => array (
                         'markets',
                         'ticker',
+                        'allTicker',
                         'depth',
                         'trades',
                         'kline',
@@ -176,7 +180,6 @@ class zb extends Exchange {
                 'amount' => $market['amountScale'],
                 'price' => $market['priceScale'],
             );
-            $lot = pow (10, -$precision['amount']);
             $result[] = array (
                 'id' => $id,
                 'symbol' => $symbol,
@@ -184,12 +187,11 @@ class zb extends Exchange {
                 'quoteId' => $quoteId,
                 'base' => $base,
                 'quote' => $quote,
-                'lot' => $lot,
                 'active' => true,
                 'precision' => $precision,
                 'limits' => array (
                     'amount' => array (
-                        'min' => $lot,
+                        'min' => pow (10, -$precision['amount']),
                         'max' => null,
                     ),
                     'price' => array (
@@ -243,6 +245,27 @@ class zb extends Exchange {
         return 'market';
     }
 
+    public function fetch_deposit_address ($code, $params = array ()) {
+        $this->load_markets();
+        $currency = $this->currency ($code);
+        $response = $this->privateGetGetUserAddress (array (
+            'currency' => $currency['id'],
+        ));
+        $address = $response['message']['datas']['key'];
+        $tag = null;
+        if (mb_strpos ($address, '_') !== false) {
+            $arr = explode ('_', $address);
+            $address = $arr[0];  // WARNING => MAY BE tag_address INSTEAD OF address_tag FOR SOME CURRENCIES!!
+            $tag = $arr[1];
+        }
+        return array (
+            'currency' => $code,
+            'address' => $address,
+            'tag' => $tag,
+            'info' => $response,
+        );
+    }
+
     public function fetch_order_book ($symbol, $limit = null, $params = array ()) {
         $this->load_markets();
         $market = $this->market ($symbol);
@@ -253,6 +276,24 @@ class zb extends Exchange {
         return $this->parse_order_book($orderbook);
     }
 
+    public function fetch_tickers ($symbols = null, $params = array ()) {
+        $this->load_markets();
+        $response = $this->publicGetAllTicker ($params);
+        $result = array ();
+        $anotherMarketsById = array ();
+        $marketIds = is_array ($this->marketsById) ? array_keys ($this->marketsById) : array ();
+        for ($i = 0; $i < count ($marketIds); $i++) {
+            $tickerId = str_replace ('_', '', $marketIds[$i]);
+            $anotherMarketsById[$tickerId] = $this->marketsById[$marketIds[$i]];
+        }
+        $ids = is_array ($response) ? array_keys ($response) : array ();
+        for ($i = 0; $i < count ($ids); $i++) {
+            $market = $anotherMarketsById[$ids[$i]];
+            $result[$market['symbol']] = $this->parse_ticker($response[$ids[$i]], $market);
+        }
+        return $result;
+    }
+
     public function fetch_ticker ($symbol, $params = array ()) {
         $this->load_markets();
         $market = $this->market ($symbol);
@@ -261,7 +302,15 @@ class zb extends Exchange {
         $request[$marketFieldName] = $market['id'];
         $response = $this->publicGetTicker (array_merge ($request, $params));
         $ticker = $response['ticker'];
+        return $this->parse_ticker($ticker, $market);
+    }
+
+    public function parse_ticker ($ticker, $market = null) {
         $timestamp = $this->milliseconds ();
+        $symbol = null;
+        if ($market !== 'null') {
+            $symbol = $market['symbol'];
+        }
         $last = $this->safe_float($ticker, 'last');
         return array (
             'symbol' => $symbol,
@@ -300,7 +349,8 @@ class zb extends Exchange {
         if ($since !== null)
             $request['since'] = $since;
         $response = $this->publicGetKline (array_merge ($request, $params));
-        return $this->parse_ohlcvs($response['data'], $market, $timeframe, $since, $limit);
+        $data = $this->safe_value($response, 'data', array ());
+        return $this->parse_ohlcvs($data, $market, $timeframe, $since, $limit);
     }
 
     public function parse_trade ($trade, $market = null) {

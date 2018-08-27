@@ -4,7 +4,7 @@
 
 # -----------------------------------------------------------------------------
 
-__version__ = '1.16.44'
+__version__ = '1.17.194'
 
 # -----------------------------------------------------------------------------
 
@@ -39,6 +39,9 @@ from ccxt.base.errors import InvalidAddress                     # noqa: F401
 from ccxt.base.errors import AddressPending                     # noqa: F401
 from ccxt.base.errors import BadResponse                        # noqa: F401
 from ccxt.base.errors import NullResponse                       # noqa: F401
+from ccxt.base.errors import OrderImmediatelyFillable           # noqa: F401
+from ccxt.base.errors import OrderNotFillable                   # noqa: F401
+
 
 from ccxt.async_support._1broker import _1broker                          # noqa: F401
 from ccxt.async_support._1btcxe import _1btcxe                            # noqa: F401
@@ -46,6 +49,7 @@ from ccxt.async_support.acx import acx                                    # noqa
 from ccxt.async_support.allcoin import allcoin                            # noqa: F401
 from ccxt.async_support.anxpro import anxpro                              # noqa: F401
 from ccxt.async_support.anybits import anybits                            # noqa: F401
+from ccxt.async_support.bcex import bcex                                  # noqa: F401
 from ccxt.async_support.bibox import bibox                                # noqa: F401
 from ccxt.async_support.bigone import bigone                              # noqa: F401
 from ccxt.async_support.binance import binance                            # noqa: F401
@@ -86,6 +90,7 @@ from ccxt.async_support.chbtc import chbtc                                # noqa
 from ccxt.async_support.chilebit import chilebit                          # noqa: F401
 from ccxt.async_support.cobinhood import cobinhood                        # noqa: F401
 from ccxt.async_support.coinbase import coinbase                          # noqa: F401
+from ccxt.async_support.coinbaseprime import coinbaseprime                # noqa: F401
 from ccxt.async_support.coinbasepro import coinbasepro                    # noqa: F401
 from ccxt.async_support.coincheck import coincheck                        # noqa: F401
 from ccxt.async_support.coinegg import coinegg                            # noqa: F401
@@ -154,9 +159,11 @@ from ccxt.async_support.quoinex import quoinex                            # noqa
 from ccxt.async_support.rightbtc import rightbtc                          # noqa: F401
 from ccxt.async_support.southxchange import southxchange                  # noqa: F401
 from ccxt.async_support.surbitcoin import surbitcoin                      # noqa: F401
+from ccxt.async_support.theocean import theocean                          # noqa: F401
 from ccxt.async_support.therock import therock                            # noqa: F401
 from ccxt.async_support.tidebit import tidebit                            # noqa: F401
 from ccxt.async_support.tidex import tidex                                # noqa: F401
+from ccxt.async_support.uex import uex                                    # noqa: F401
 from ccxt.async_support.urdubit import urdubit                            # noqa: F401
 from ccxt.async_support.vaultoro import vaultoro                          # noqa: F401
 from ccxt.async_support.vbtc import vbtc                                  # noqa: F401
@@ -175,6 +182,7 @@ exchanges = [
     'allcoin',
     'anxpro',
     'anybits',
+    'bcex',
     'bibox',
     'bigone',
     'binance',
@@ -215,6 +223,7 @@ exchanges = [
     'chilebit',
     'cobinhood',
     'coinbase',
+    'coinbaseprime',
     'coinbasepro',
     'coincheck',
     'coinegg',
@@ -283,9 +292,11 @@ exchanges = [
     'rightbtc',
     'southxchange',
     'surbitcoin',
+    'theocean',
     'therock',
     'tidebit',
     'tidex',
+    'uex',
     'urdubit',
     'vaultoro',
     'vbtc',

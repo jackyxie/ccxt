@@ -16,6 +16,7 @@ class kraken extends Exchange {
             'countries' => array ( 'US' ),
             'version' => '0',
             'rateLimit' => 3000,
+            'certified' => true,
             'has' => array (
                 'createDepositAddress' => true,
                 'fetchDepositAddress' => true,
@@ -198,6 +199,7 @@ class kraken extends Exchange {
                 'EAPI:Rate limit exceeded' => '\\ccxt\\DDoSProtection',
                 'EQuery:Unknown asset' => '\\ccxt\\ExchangeError',
                 'EGeneral:Internal error' => '\\ccxt\\ExchangeNotAvailable',
+                'EGeneral:Temporary lockout' => '\\ccxt\\DDoSProtection',
             ),
         ));
     }
@@ -212,13 +214,14 @@ class kraken extends Exchange {
 
     public function fetch_min_order_sizes () {
         $html = null;
+        $oldParseJsonResponse = $this->parseJsonResponse;
         try {
             $this->parseJsonResponse = false;
             $html = $this->zendeskGet205893708WhatIsTheMinimumOrderSize ();
-            $this->parseJsonResponse = true;
+            $this->parseJsonResponse = $oldParseJsonResponse;
         } catch (Exception $e) {
             // ensure parseJsonResponse is restored no matter what
-            $this->parseJsonResponse = true;
+            $this->parseJsonResponse = $oldParseJsonResponse;
             throw $e;
         }
         $parts = explode ('ul>', $html);
@@ -525,7 +528,7 @@ class kraken extends Exchange {
             $market = $this->find_market_by_altname_or_id ($trade['pair']);
         if (is_array ($trade) && array_key_exists ('ordertxid', $trade)) {
             $order = $trade['ordertxid'];
-            $id = $trade['id'];
+            $id = $this->safe_string_2($trade, 'id', 'postxid');
             $timestamp = intval ($trade['time'] * 1000);
             $side = $trade['type'];
             $type = $trade['ordertype'];
