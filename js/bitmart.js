@@ -526,8 +526,9 @@ module.exports = class bitmart extends Exchange {
                 if (method === 'GET' || method === 'DELETE') {
                     url += '?' + this.rawencode (query);
                 }
-                body = this.urlencode (query);
-                signature = this.hmac (body, this.encode (this.secret), 'sha256');
+                let payload = this.urlencode (query);
+                body = this.json (query);
+                signature = this.hmac (payload, this.encode (this.secret), 'sha256');
             }
             headers = {
                 'X-BM-AUTHORIZATION': 'Bearer ' + this.accesstoken,

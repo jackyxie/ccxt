@@ -492,8 +492,9 @@ class bitmart (Exchange):
                 query = self.keysort(query)
                 if method == 'GET' or method == 'DELETE':
                     url += '?' + self.rawencode(query)
-                body = self.urlencode(query)
-                signature = self.hmac(body, self.encode(self.secret), hashlib.sha256)
+                payload = self.urlencode(query)
+                body = self.json(query)
+                signature = self.hmac(payload, self.encode(self.secret), hashlib.sha256)
             headers = {
                 'X-BM-AUTHORIZATION': 'Bearer ' + self.accesstoken,
                 'X-BM-TIMESTAMP': timestamp,
