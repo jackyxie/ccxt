@@ -81,7 +81,7 @@ The ccxt library currently supports the following 132 cryptocurrency exchange ma
 |               | \|\ |bitkk| \| bitkk \| `bitkk <https://vip.zb.com/user/register?recommendCode=bn070u>`__ \| \| 1 \| `API <https://www.bitkk.com/i/developer>`__ \| China \|                                                                              |
 |               | \|\ |bitlish| \| bitlish \| `Bitlish <https://bitlish.com>`__ \| \| 1 \| `API <https://bitlish.com/api>`__ \| UK, EU, Russia \|                                                                                                           |
 |               | \|\ |bitmarket| \| bitmarket \| `BitMarket <https://www.bitmarket.pl>`__ \| \| \* \| `API <https://www.bitmarket.net/docs.php?file=api_public.html>`__ \| Poland, EU \|                                                                   |
-|               | \|\ |bitmart| \| bitmart \| `BitMart <https://www.bitmart.com/>`__ \| \| 2 \| `API <https://github.com/bitmartexchange/api-docs>`__ \| China \|                                                                                           |
+|               | \|\ |bitmart| \| bitmart \| `BitMart <https://www.bitmart.com/>`__ \| \| 2 \| `API <https://github.com/bitmartexchange/api-docs>`__ \| Hong Kong \|                                                                                       |
 |               | \|\ |bitmex| \| bitmex \| `BitMEX <https://www.bitmex.com/register/rm3C16>`__ \| \| 1 \| `API <https://www.bitmex.com/app/apiOverview>`__ \| Seychelles \|                                                                                |
 |               | \|\ |bitsane| \| bitsane \| `Bitsane <https://bitsane.com>`__ \| \| \* \| `API <https://bitsane.com/info-api>`__ \| Ireland \|                                                                                                            |
 |               | \|\ |bitso| \| bitso \| `Bitso <https://bitso.com>`__ \| \| 3 \| `API <https://bitso.com/api_info>`__ \| Mexico \|                                                                                                                        |
@@ -2630,7 +2630,7 @@ Notes
 .. |bitkk| image:: https://user-images.githubusercontent.com/1294454/32859187-cd5214f0-ca5e-11e7-967d-96568e2e2bd1.jpg
 .. |bitlish| image:: https://user-images.githubusercontent.com/1294454/27766275-dcfc6c30-5ed3-11e7-839d-00a846385d0b.jpg
 .. |bitmarket| image:: https://user-images.githubusercontent.com/1294454/27767256-a8555200-5ef9-11e7-96fd-469a65e2b0bd.jpg
-.. |bitmart| image:: https://user-images.githubusercontent.com/1294454/42244210-c8c42e1e-7f1c-11e8-8710-a5fb63b165c4.jpg
+.. |bitmart| image:: 
 .. |bitmex| image:: https://user-images.githubusercontent.com/1294454/27766319-f653c6e6-5ed4-11e7-933d-f0bc3699ae8f.jpg
 .. |bitsane| image:: https://user-images.githubusercontent.com/1294454/41387105-d86bf4c6-6f8d-11e8-95ea-2fa943872955.jpg
 .. |bitso| image:: https://user-images.githubusercontent.com/1294454/27766335-715ce7aa-5ed5-11e7-88a8-173a27bb30fe.jpg

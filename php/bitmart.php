@@ -13,7 +13,7 @@ class bitmart extends Exchange {
         return array_replace_recursive (parent::describe (), array (
             'id' => 'bitmart',
             'name' => 'BitMart',
-            'countries' => 'CN',
+            'countries' => 'HK',
             'rateLimit' => 2000,
             'userAgent' => $this->userAgents['chrome39'],
             'version' => 'v2',
@@ -46,7 +46,7 @@ class bitmart extends Exchange {
                 '1M' => 'MN',
             ),
             'urls' => array (
-                'logo' => 'https://user-images.githubusercontent.com/1294454/42244210-c8c42e1e-7f1c-11e8-8710-a5fb63b165c4.jpg',
+                'logo' => '',
                 'api' => 'https://openapi.bitmart.com',
                 'www' => 'https://www.bitmart.com/',
                 'referral' => 'https://www.bitmart.com/',
